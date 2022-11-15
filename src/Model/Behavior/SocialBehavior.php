@@ -20,6 +20,7 @@ use Cake\Utility\Hash;
 use CakeDC\Users\Exception\AccountNotActiveException;
 use CakeDC\Users\Exception\MissingEmailException;
 use CakeDC\Users\Exception\UserNotActiveException;
+use CakeDC\Users\Exception\AccountNotActiveException;
 use CakeDC\Users\Plugin;
 use CakeDC\Users\Traits\RandomStringTrait;
 use DateTime;
@@ -76,13 +77,21 @@ class SocialBehavior extends BaseTokenBehavior
                 ->contain(['Users'])
                 ->first();
         if (empty($existingAccount->user)) {
-            $user = $this->_createSocialUser($data, $options);
-            if (!empty($user->social_accounts[0])) {
-                $existingAccount = $user->social_accounts[0];
-            } else {
-                //@todo: what if we don't have a social account after createSocialUser?
-                throw new InvalidArgumentException(
-                    __d('cake_d_c/users', 'Unable to login user with reference {0}', $reference)
+            if (Configure::read('Users.Registration.active')) {
+                $user = $this->_createSocialUser($data, $options);
+                if (!empty($user->social_accounts[0])) {
+                    $existingAccount = $user->social_accounts[0];
+                } else {
+                    //@todo: what if we don't have a social account after createSocialUser?
+                    throw new InvalidArgumentException(
+                        __d('cake_d_c/users', 'Unable to login user with reference {0}', $reference)
+                    );
+                }
+            }
+            else {
+                //throw an exception if the configuration of registration is disabled which mean we don't allow user to do the registration
+                throw new AccountNotActiveException(
+                    __d('cake_d_c/users', 'You account does not exist, please contact adminstrator')
                 );
             }
         } else {
