@@ -226,6 +226,9 @@ class SocialBehavior extends BaseTokenBehavior
 
             $user = $this->_table->newEntity($userData);
             $user = $this->_updateActive($user, false, $tokenExpiration);
+            
+            // make sure that the configuration allows registration enabled and default role is not false
+            $user['role'] = Configure::read('Users.Registration.defaultRole') ?: 'user';
         } else {
             if ($useEmail && empty($dataValidated)) {
                 $accountData['active'] = false;
@@ -236,7 +239,6 @@ class SocialBehavior extends BaseTokenBehavior
         //ensure provider is present in Entity
         $socialAccount['provider'] = $data['provider'] ?? null;
         $user['social_accounts'] = [$socialAccount];
-        $user['role'] = Configure::read('Users.Registration.defaultRole') ?: 'user';
 
         return $user;
     }
