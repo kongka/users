@@ -20,7 +20,6 @@ use Cake\Utility\Hash;
 use CakeDC\Users\Exception\AccountNotActiveException;
 use CakeDC\Users\Exception\MissingEmailException;
 use CakeDC\Users\Exception\UserNotActiveException;
-use CakeDC\Users\Exception\AccountNotActiveException;
 use CakeDC\Users\Plugin;
 use CakeDC\Users\Traits\RandomStringTrait;
 use DateTime;
