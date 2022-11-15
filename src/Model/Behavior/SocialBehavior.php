@@ -77,21 +77,13 @@ class SocialBehavior extends BaseTokenBehavior
                 ->contain(['Users'])
                 ->first();
         if (empty($existingAccount->user)) {
-            if (Configure::read('Users.Registration.active')) {
-                $user = $this->_createSocialUser($data, $options);
-                if (!empty($user->social_accounts[0])) {
-                    $existingAccount = $user->social_accounts[0];
-                } else {
-                    //@todo: what if we don't have a social account after createSocialUser?
-                    throw new InvalidArgumentException(
-                        __d('cake_d_c/users', 'Unable to login user with reference {0}', $reference)
-                    );
-                }
-            }
-            else {
-                //throw an exception if the configuration of registration is disabled which mean we don't allow user to do the registration
-                throw new AccountNotActiveException(
-                    __d('cake_d_c/users', 'You account does not exist, please contact adminstrator')
+            $user = $this->_createSocialUser($data, $options);
+            if (!empty($user->social_accounts[0])) {
+                $existingAccount = $user->social_accounts[0];
+            } else {
+                //@todo: what if we don't have a social account after createSocialUser?
+                throw new InvalidArgumentException(
+                    __d('cake_d_c/users', 'Unable to login user with reference {0}', $reference)
                 );
             }
         } else {
@@ -184,6 +176,13 @@ class SocialBehavior extends BaseTokenBehavior
         $dataValidated = $data['validated'] ?? null;
 
         if (empty($existingUser)) {
+            if (!Configure::read('Users.Registration.active')) {
+                //throw an exception if the configuration of registration is disabled which mean we don't allow user to do the registration
+                throw new AccountNotActiveException([
+                    $data['provider'] ?? null, // provider name like google, facebook, ...
+                    $data['id'] ?? null, // reference id of social login like google id or facebook id of the user
+                ]);
+            }
             $firstName = $data['first_name'] ?? null;
             $lastName = $data['last_name'] ?? null;
             if (!empty($firstName) && !empty($lastName)) {
